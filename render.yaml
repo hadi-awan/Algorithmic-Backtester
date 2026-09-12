@@ -1,0 +1,21 @@
+# Render Blueprint for the backend API.
+# Deploy: Render dashboard -> New -> Blueprint -> select this repo.
+# Render will read this file and provision the service automatically.
+services:
+  - type: web
+    name: quant-backtester-api
+    runtime: python
+    plan: free
+    region: oregon
+    buildCommand: pip install -r backend/requirements.txt
+    startCommand: cd backend && uvicorn app.api.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /api/health
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
+      - key: CORS_ALLOWED_ORIGINS
+        # Set this to your deployed frontend's origin once you have it,
+        # e.g. https://your-app.vercel.app (comma-separate multiple
+        # origins, such as your Vercel URL plus http://localhost:5173
+        # for continued local development against the deployed API).
+        value: "*"
