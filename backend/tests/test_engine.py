@@ -28,6 +28,13 @@ def test_signal_is_shifted_no_lookahead():
     assert day2_return == pytest.approx(0.10)
 
 
+def test_nan_in_close_raises():
+    close = pd.Series([100, 105, float("nan"), 110], index=_dates(4))
+    signal = pd.Series([1, 1, 1, 1], index=_dates(4))
+    with pytest.raises(ValueError, match="missing values"):
+        run_backtest(close, signal)
+
+
 def test_mismatched_index_raises():
     # Same length, but a shifted (different) index -> engine must reject
     # rather than silently aligning/misaligning dates.

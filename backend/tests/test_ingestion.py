@@ -89,6 +89,21 @@ def test_exception_message_surfaced_after_all_retries_fail():
             fetch_ohlcv("AAPL", "2023-01-01", "2024-01-01")
 
 
+def test_rows_with_nan_close_are_dropped():
+    """Yahoo occasionally returns a NaN Close for the most recent bar
+    even though the row isn't entirely empty (Open/Volume etc. present).
+    That row must be dropped rather than flowing into the backtest
+    engine, where it would silently turn into a null deep in a metric."""
+    df = _make_raw_df(n=260)
+    # Corrupt only the Close value of the last row -- Open/High/Low/Volume
+    # stay populated, so a naive dropna(how="all") would keep this row.
+    df.loc[df.index[-1], "Close"] = float("nan")
+    with patch("app.data.ingestion.yf.download", return_value=df):
+        result = fetch_ohlcv("AAPL", "2023-01-01", "2024-01-01", min_trading_days=1)
+    assert len(result) == 259
+    assert not result["Close"].isna().any()
+
+
 def test_insufficient_history_raises():
     with patch("app.data.ingestion.yf.download", return_value=_make_raw_df(n=50)):
         with pytest.raises(DataIngestionError, match="Only 50 trading days"):

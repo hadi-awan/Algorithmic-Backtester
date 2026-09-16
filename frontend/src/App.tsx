@@ -1,5 +1,6 @@
 import { useState } from "react";
 import BacktestForm from "./components/BacktestForm";
+import ErrorBoundary from "./components/ErrorBoundary";
 import EquityChart from "./components/EquityChart";
 import ErrorBanner from "./components/ErrorBanner";
 import FeatureImportanceChart from "./components/FeatureImportanceChart";
@@ -53,31 +54,33 @@ export default function App() {
       {isLoading && <LoadingSpinner />}
 
       {!isLoading && result && (
-        <div className="flex flex-col gap-6">
-          <EquityChart
-            ruleBased={result.rule_based}
-            ml={result.ml}
-            buyAndHold={result.buy_and_hold}
-            outOfSampleStartDate={result.out_of_sample_start_date}
-          />
+        <ErrorBoundary>
+          <div className="flex flex-col gap-6">
+            <EquityChart
+              ruleBased={result.rule_based}
+              ml={result.ml}
+              buyAndHold={result.buy_and_hold}
+              outOfSampleStartDate={result.out_of_sample_start_date}
+            />
 
-          <MetricsTable
-            ruleBased={result.rule_based.metrics}
-            ml={result.ml.metrics}
-            buyAndHold={result.buy_and_hold.metrics}
-            buyAndHoldOutOfSample={result.buy_and_hold_out_of_sample.metrics}
-            outOfSampleStartDate={result.out_of_sample_start_date}
-            endDate={result.end_date}
-          />
+            <MetricsTable
+              ruleBased={result.rule_based.metrics}
+              ml={result.ml.metrics}
+              buyAndHold={result.buy_and_hold.metrics}
+              buyAndHoldOutOfSample={result.buy_and_hold_out_of_sample.metrics}
+              outOfSampleStartDate={result.out_of_sample_start_date}
+              endDate={result.end_date}
+            />
 
-          <FeatureImportanceChart importances={result.feature_importances} />
+            <FeatureImportanceChart importances={result.feature_importances} />
 
-          <TradeLogTable
-            ruleBased={result.rule_based.trades}
-            ml={result.ml.trades}
-            buyAndHold={result.buy_and_hold.trades}
-          />
-        </div>
+            <TradeLogTable
+              ruleBased={result.rule_based.trades}
+              ml={result.ml.trades}
+              buyAndHold={result.buy_and_hold.trades}
+            />
+          </div>
+        </ErrorBoundary>
       )}
 
       {!isLoading && !result && !error && (

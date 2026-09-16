@@ -137,6 +137,14 @@ def fetch_ohlcv(
 
     raw = raw[["Open", "High", "Low", "Close", "Volume"]].dropna(how="all")
 
+    # Yahoo Finance occasionally returns a NaN Close for the most recent
+    # bar (e.g. a session that hasn't fully settled/adjusted yet) even
+    # though the row isn't entirely empty. The whole pipeline is keyed
+    # on Close, so a single NaN here can silently turn into a null deep
+    # in a downstream metric (e.g. a trade's exit price) rather than a
+    # clear error -- drop any such row up front instead.
+    raw = raw.dropna(subset=["Close"])
+
     if len(raw) < min_trading_days:
         raise DataIngestionError(
             f"Only {len(raw)} trading days found for '{ticker}' between "

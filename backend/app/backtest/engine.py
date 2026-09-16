@@ -93,6 +93,11 @@ def run_backtest(close: pd.Series, signal: pd.Series) -> BacktestResult:
     """
     if not close.index.equals(signal.index):
         raise ValueError("close and signal must share the same index.")
+    if close.isna().any():
+        raise ValueError(
+            "Price series contains missing values (NaN); cannot backtest. "
+            "This usually means upstream data ingestion let through a bad row."
+        )
 
     daily_returns = close.pct_change().fillna(0)
     position = signal.shift(1).fillna(0)  # act on yesterday's signal
